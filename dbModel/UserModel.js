@@ -6,7 +6,8 @@ const schema = mongoose.Schema({
  email: String,
  password: String,
  type: String,
- date: Date
+ token:String,
+ date: String
 })
 
 //creating || accessing collection
