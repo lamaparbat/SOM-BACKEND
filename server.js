@@ -41,7 +41,7 @@ server.use(express.json())
 
 //https routing
 server.get("/", (req, res) => {
- res.send("hellow world");
+ res.send("server started ......");
 })
 
 server.post("/createAccount", async (req, res) => {
