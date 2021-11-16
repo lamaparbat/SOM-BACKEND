@@ -3,6 +3,7 @@ const cors = require("cors");
 require("dotenv").config()
 const mongoose = require("mongoose"); 
 const UserModel = require("./dbModel/UserModel.js");
+const storiesModel = require("./dbModel/storiesModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const jwtGenerator = require("./jwt.js");
@@ -45,37 +46,49 @@ server.get("/", (req, res) => {
 
 server.post("/createAccount", async (req, res) => {
  const data = req.body;
- 
- //hashing password
- const round = 10;
- const hashPassword = await bcrypt.hash(data.password, round);
- 
- //generate web tokens
- const token = await jwtGenerator({ uname: data.uname }, process.env.SECRET_KEY)
-
- // insert into db
- UserModel.create({
-  uname: data.uname,
-  email: data.email,
-  password: hashPassword,
-  type: data.type,
-  token: token,
-  date: new Date().toLocaleDateString()
- }, (err, doc) => {
+ UserModel.find({ email: req.body.email }, async(err, doc) => {
   if (err) {
-   res.status(500).send(err);
+   console.log(err)
   } else {
-   //realtime jwt send to client
-   pusher.trigger("jwt", "created", {
-    message: token
-   });
-   res.status(200).send({
-    message: "Registered successfull !!",
-    data: doc
-   })
+   if (doc.length != 0) {
+    console.log("User alread registered !!")
+    res.send({
+     message:"User alread registered !!"
+    })
+   } else {
+    //hashing password
+    const round = 10;
+    const hashPassword = await bcrypt.hash(data.password, round);
+
+    //generate web tokens
+    const token = await jwtGenerator({ uname: data.uname }, process.env.SECRET_KEY)
+
+    // insert into db
+    UserModel.create({
+     uname: data.uname,
+     email: data.email,
+     password: hashPassword,
+     type: data.type,
+     token: token,
+     date: new Date().toLocaleDateString()
+    }, (err, doc) => {
+     if (err) {
+      res.status(500).send(err);
+     } else {
+      //realtime jwt send to client
+      pusher.trigger("jwt", "created", {
+       message: token
+      });
+      res.status(200).send({
+       message: "Registered successfull !!",
+       data: doc
+      })
+     }
+    })
+    console.log("registered successfully !!");
+   }
   }
  })
- console.log("registered successfull !!");
 })
 
 //login
@@ -86,9 +99,11 @@ server.post("/login", (req, res) => {
   } else {
    const check = await bcrypt.compare(req.body.password, doc[0].password);
    if (check) {
-    res.status(200).send({
+     res.status(200).send({
      token: doc[0].token,
+     uname:doc[0].uname,
      check: true,
+     email: doc[0].email,
      message: "login successfull"
     });
     console.log("login successfull !!")
@@ -98,6 +113,24 @@ server.post("/login", (req, res) => {
      message: "login failed !!"
     });
    }
+  }
+ })
+})
+
+//get the userdata
+server.post("/userData", (req, res) => {
+ console.log(req.body.token)
+ 
+})
+
+//upload new story to db
+server.post("/uploadProject", (req, res) => {
+ storiesModel.create(req.body, (err, doc) => {
+  if (err) {
+   res.send(err)
+  } else {
+   console.log(doc);
+   res.send(doc);
   }
  })
 })
