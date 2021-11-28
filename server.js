@@ -106,29 +106,40 @@ server.post("/createAccount", async (req, res) => {
 })
 
 //login
-server.post("/login", (req, res) => {
- UserModel.find({ email: req.body.email }, async(err, doc) => {
-  if (err) {
-   console.log(err);
-  } else {
-   const check = await bcrypt.compare(req.body.password, doc[0].password);
-   if (check) {
-     res.status(200).send({
-     token: doc[0].token,
-     uname:doc[0].uname,
-     check: true,
-     email: doc[0].email,
-     message: "login successfull"
-    });
-    console.log("login successfull !!")
-   } else {
-    res.send({
-     check: false,
-     message: "login failed !!"
-    });
-   }
-  }
- })
+const auth = (req, res, next) => {
+  UserModel.find({ email: req.body.email }, async (err, doc) => {
+    if (err) {
+      console.log(err);
+    } else {
+      doc = doc;
+      const check = await bcrypt.compare(req.body.password, doc[0].password);
+      if (check) {
+       next()
+      }
+      // else {
+      //   res.send({
+      //     check: false,
+      //     message: "login failed !!"
+      //   });
+      // }
+    }
+  })
+}
+
+server.post("/login", auth, (req, res) => {
+  UserModel.find({ email: req.body.email }, async (err, doc) => {
+    if (err) {
+      console.log(err)
+    } else {
+      res.status(200).send({
+        token: doc[0].token,
+        uname: doc[0].uname,
+        check: true,
+        email: doc[0].email,
+        message: "login successfull"
+      });
+    }
+  });
 })
 
 //get the userdata
