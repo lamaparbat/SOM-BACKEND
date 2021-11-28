@@ -15,6 +15,10 @@ const path = require("path")
 const server = express()
 const port = process.env.PORT || 5000;
 
+//middlerware
+server.use(cors())
+server.use(express.json())
+
 //db config
 const conUrl = `mongodb+srv://parbat:${process.env.PASSWORD}@cluster0.gymid.mongodb.net/som?retryWrites=true&w=majority`;
 mongoose.connect(conUrl, {
@@ -48,10 +52,6 @@ const pusher = new Pusher({
  cluster: "ap2",
  useTLS: true
 });
-
-//middlerware
-server.use(cors())
-server.use(express.json())
 
 //https routing
 server.get("/", (req, res) => {
