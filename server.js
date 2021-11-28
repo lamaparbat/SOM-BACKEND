@@ -23,12 +23,13 @@ mongoose.connect(conUrl, {
 });
 
 //multer engine config
+var url = null;
 const storage = multer.diskStorage({
   destination: __dirname.slice(0, __dirname.length - 7) + "frontend/public/uploads/",
   filename: function (req, file, cb) {
     cb(
       null,
-      file.fieldname + "-" + Date.now() + path.extname(file.originalname),
+      url = file.fieldname + "-" + Date.now() + path.extname(file.originalname),
     )
   }
 })
@@ -138,15 +139,23 @@ server.post("/userData", (req, res) => {
 
 //upload new story to db
 server.post("/uploadProject", upload.single("img"), (req, res) => {
-  console.log(req.body, req.file)
-//  storiesModel.create(req.body, (err, doc) => {
-//   if (err) {
-//    res.send(err)
-//   } else {
-//    console.log(doc);
-//    res.send(doc);
-//   }
-//  })
+  storiesModel.create({
+    title: req.body.title,
+    description: req.body.description,
+    img: url,
+    category: req.body.category,
+    language: req.body.language,
+    date: new Date().toLocaleDateString(),
+    views: 0,
+    likes:0
+  }, (err, doc) => {
+  if (err) {
+   res.send(err)
+  } else {
+   console.log(doc);
+   res.send(doc);
+  }
+ })
 })
 
 //port listener
