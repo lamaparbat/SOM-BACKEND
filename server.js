@@ -8,7 +8,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const jwtGenerator = require("./jwt.js");
 const Pusher = require("pusher");
-const e = require("express");
+const multer = require("multer");
+const path = require("path")
 
 //server config
 const server = express()
@@ -20,6 +21,18 @@ mongoose.connect(conUrl, {
  useNewUrlParser: true,
  useUnifiedTopology: true
 });
+
+//multer engine config
+const storage = multer.diskStorage({
+  destination: __dirname.slice(0, __dirname.length - 7) + "frontend/public/uploads/",
+  filename: function (req, file, cb) {
+    cb(
+      null,
+      file.fieldname + "-" + Date.now() + path.extname(file.originalname),
+    )
+  }
+})
+const upload = multer({ storage: storage });
 
 const db = mongoose.connection;
 db.once('open', () => {
@@ -124,15 +137,16 @@ server.post("/userData", (req, res) => {
 })
 
 //upload new story to db
-server.post("/uploadProject", (req, res) => {
- storiesModel.create(req.body, (err, doc) => {
-  if (err) {
-   res.send(err)
-  } else {
-   console.log(doc);
-   res.send(doc);
-  }
- })
+server.post("/uploadProject", upload.single("img"), (req, res) => {
+  console.log(req.body, req.file)
+//  storiesModel.create(req.body, (err, doc) => {
+//   if (err) {
+//    res.send(err)
+//   } else {
+//    console.log(doc);
+//    res.send(doc);
+//   }
+//  })
 })
 
 //port listener
