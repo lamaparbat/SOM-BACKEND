@@ -116,17 +116,11 @@ const auth = (req, res, next) => {
       if (check) {
        next()
       }
-      // else {
-      //   res.send({
-      //     check: false,
-      //     message: "login failed !!"
-      //   });
-      // }
     }
   })
 }
 
-server.post("/login", auth, (req, res) => {
+server.post("/login", (req, res) => {
   UserModel.find({ email: req.body.email }, async (err, doc) => {
     if (err) {
       console.log(err)
