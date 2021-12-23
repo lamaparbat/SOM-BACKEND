@@ -105,20 +105,6 @@ server.post("/createAccount", async (req, res) => {
  })
 })
 
-//login
-const auth = (req, res, next) => {
-  UserModel.find({ email: req.body.email }, async (err, doc) => {
-    if (err) {
-      console.log(err);
-    } else {
-      doc = doc;
-      const check = await bcrypt.compare(req.body.password, doc[0].password);
-      if (check) {
-       next()
-      }
-    }
-  })
-}
 
 server.post("/login", (req, res) => {
   UserModel.find({ email: req.body.email }, async (err, doc) => {
