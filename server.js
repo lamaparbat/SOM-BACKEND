@@ -89,10 +89,10 @@ server.post("/createAccount", async (req, res) => {
      if (err) {
       res.status(500).send(err);
      } else {
-      //realtime jwt send to client
-      pusher.trigger("jwt", "created", {
-       message: token
-      });
+      // //realtime jwt send to client
+      // pusher.trigger("jwt", "created", {
+      //  message: token
+      // });
       res.status(200).send({
        message: "Registered successfull !!",
        data: doc
